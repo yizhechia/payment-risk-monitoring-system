@@ -1,0 +1,12 @@
+{
+  "dataset": "ealaxi/paysim1",
+  "version": 2,
+  "source_url": "https://www.kaggle.com/datasets/ealaxi/paysim1",
+  "download_url": "https://www.kaggle.com/api/v1/datasets/download/ealaxi/paysim1?datasetVersionNumber=2",
+  "filename": "PS_20174392719_1491204439457_log.csv",
+  "bytes": 493534783,
+  "rows": 6362620,
+  "fraud_rows": 8213,
+  "sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+  "license_recorded": "CC BY-SA 4.0"
+}

@@ -23,7 +23,7 @@ A field can be useful for retrospective investigation without being valid for an
 
 | Field | Expected raw type | Meaning and constraints | Decision-time classification | Approved use at this stage |
 |---|---|---|---|---|
-| `step` | Integer | Simulated hourly bucket. Source documentation says 744 hours; the artifact preview reports values `1`–`743`. No calendar timestamp or time zone is supplied. | `REQUEST` + `TIME_AMBIGUOUS` | Chronological grouping and step-level trends. It must not establish order between rows in the same step. |
+| `step` | Integer | Simulated hourly bucket. Source documentation says 744 hours; full-file validation measured values `1`-`743`, with 743 distinct buckets. No calendar timestamp or time zone is supplied. | `REQUEST` + `TIME_AMBIGUOUS` | Chronological grouping and step-level trends. It must not establish order between rows in the same step. |
 | `type` | String / category | Expected values: `CASH_IN`, `CASH_OUT`, `DEBIT`, `PAYMENT`, `TRANSFER`. | `REQUEST` | Candidate authorization-time input and investigation dimension. |
 | `amount` | Non-negative numeric | Transaction value in an undisclosed local currency. No currency code is supplied. | `REQUEST` | Candidate authorization-time input. Do not label values as dollars. |
 | `nameOrig` | String | Synthetic identifier of the initiating customer. Expected to be non-null; identifier pattern must be measured from the file rather than assumed. | `REQUEST` | Entity key for historical sender activity. It is not a real customer identity. |
@@ -55,7 +55,7 @@ A generated row number may be used only as a technical ingestion key. It must no
 For a transaction in step `t`, an authorization-time feature may use:
 
 - request fields on that transaction; and
-- aggregates derived from completed steps strictly less than `t`.
+- aggregates of eligible request-time activity from completed steps strictly less than `t`.
 
 It may not use:
 
@@ -65,4 +65,12 @@ It may not use:
 - any transaction from a future step;
 - any other row from step `t` under an assumed CSV ordering.
 
+Past fraud labels are not automatically available history. The dataset has no label-availability timestamps, so historical fraud-label aggregates are excluded from the initial feature policy.
+
 This conservative boundary sacrifices some apparent signal in exchange for a defensible simulation of what the risk system could have known.
+
+## Implemented storage contract
+
+All 11 source fields are first parsed as strings so schema inference cannot silently alter them. The validated representation uses `INTEGER` for `step`, `UTINYINT` for binary labels, `VARCHAR` for type/entity fields, and `DECIMAL(18,2)` for all five monetary fields. Ordinary decimals and scientific notation are accepted only when the exponent-adjusted scale is at most two and the value fits the non-negative decimal range. Greater precision is rejected before casting. This scale is observed in the selected artifact; the currency remains unspecified.
+
+`row_id` is a generated `BIGINT`, assigned under single-thread, nonparallel CSV ingestion. It joins the request, balance, outcome and supplied-policy tables. The joined `transactions` view is retrospective. A schema test checks that the request table excludes labels, policy outputs and all balances. A model feature-matrix contract remains future work.

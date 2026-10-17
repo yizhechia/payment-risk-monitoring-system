@@ -1,43 +1,43 @@
 # Project State
 
-## Current milestone
+## Current scope
 
-**Milestone 1 — Problem and Data Foundation: IN PROGRESS**
+**v0.1.0: data foundation and SQL investigation.** Milestones 1 and 2 have an implemented, tested technical slice. Their learning acceptance remains open. Milestones 3-7 have not been implemented; no model, tuned policy or dashboard is claimed.
 
-The approved primary dataset is PaySim. No ingestion, schema-validation, SQL-investigation, feature-engineering, or modelling code has been implemented.
+| Component | BUILT | TESTED | UNDERSTOOD | INTERVIEW READY |
+| --- | --- | --- | --- | --- |
+| Canonical acquisition, ingestion and validation | Yes | Fixtures and full PaySim file | Pending | No |
+| Nine DuckDB SQL investigations and report | Yes | Hand-counted fixtures and full-file reconciliation | Pending | No |
+| Features and new rules | No | No | Pending | No |
+| Models, decision strategy and dashboard | No | No | Pending | No |
 
-## Progress labels
+## Verified evidence
 
-- **BUILT:** Dataset provenance record, field-level data dictionary, and leakage register.
-- **TESTED:** Nothing yet. The raw CSV has not been acquired or validated locally.
-- **UNDERSTOOD:** Pending the required comprehension check on post-decision leakage.
-- **INTERVIEW READY:** No.
+- Canonical version 2: `PS_20174392719_1491204439457_log.csv`, 493,534,783 bytes, SHA-256 `16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b`.
+- 6,362,620 rows, 8,213 fraud labels, 16 supplied policy flags; 743 distinct steps spanning 1-743.
+- No missing or invalid field values under implemented checks; no duplicate-valued extra rows. 2,151,495 merchant destination rows have structural zero-balance placeholders.
+- Ordinary decimal and scientific notation both occur. Every monetary column has at most two effective decimal places after applying its exponent; `DECIMAL(18,2)` preserves the values exactly.
+- Nine investigations reconcile population, fraud, supplied-policy confusion counts and monetary totals. SQL hashes, parameters, complete returned results and report are in `reports/paysim-v0.1.0/`.
+- 102 software fixture tests passed on Python 3.12.14 / DuckDB 1.4.3. Ruff checks, wheel build and installation into a separate environment passed. The installed wheel's demo completed successfully. Hosted CI status is separate from local evidence.
 
-## Completed decisions
+## Recorded decisions
 
-1. Use PaySim as the primary dataset.
-2. Define the operational decision point as immediately before a transaction is allowed or blocked and before ledger balances are changed.
-3. Treat `isFraud` as an outcome label, never as an input feature.
-4. Treat `isFlaggedFraud` as an existing policy output: retain it for legacy-rule comparison, but exclude it from candidate features.
-5. Treat `newbalanceOrig` and `newbalanceDest` as post-decision information and exclude them from authorization-time features.
-6. For transaction-level features at step `t`, use only information from completed steps strictly earlier than `t`. CSV row order within a step is not accepted as event order.
-7. Keep all rows from the same `step` in the same chronological data partition.
-8. Do not commit the raw dataset to Git.
+1. PaySim remains the approved primary dataset. Findings describe synthetic mobile-money behaviour and system methodology, not production performance.
+2. The intended decision point precedes execution or cancellation. All balances, outcomes and the supplied policy flag are physically separate from the request table. The joined view is retrospective.
+3. Historical prediction inputs must eventually use steps strictly less than the scored step. The implemented prior-hour investigation uses exactly `t - 1`; row IDs do not establish intra-hour sequence. General feature, preprocessing and split leakage safeguards remain pending.
+4. Do not silently remove duplicate-valued records, impute balances, round monetary precision, substitute a dataset mirror or override the pinned canonical hash.
+5. Use the artifact's measured 1-743 coverage. The source prose's 744-hour description is retained as a documented source discrepancy; its cause is unknown.
+6. The supplied flag disagrees with the publisher's simplified transfer-above-200,000 condition on 409,094 rows. Preserve both facts; do not rewrite the flag or invent additional simulator conditions.
+7. SQL uses a 2 GB DuckDB engine budget after the full account-hour query exceeded 1 GB. Ingestion uses 1 GB. These are not whole-process memory caps.
+8. The user explicitly requested completing the first ingestion + SQL release before the learning check. That permits this technical slice, but does not mark understanding complete or authorise moving into models.
+9. Raw data, generated databases, credentials, the private brief and personal resume stay outside Git. Original project code has no chosen open-source license; dataset-derived reports retain CC BY-SA 4.0 attribution.
 
-## Built documentation
+## Acceptance and open work
 
-- `docs/DATASET_PROVENANCE.md`
-- `docs/DATA_DICTIONARY.md`
-- `docs/LEAKAGE_REGISTER.md`
+**Technical release: ACCEPT for the named ingestion + SQL scope. Learning gates: PENDING. Progression to model work: BLOCK.**
 
-## Open issues
+Before Milestone 3, the user must explain decision-time availability and the implemented SQL, then make a small independent change. A future feature allow-list, whole-step chronological partitioning, train-only preprocessing and label-delay policy are not yet implemented. Later evaluation must disclose that the full dataset has already been explored descriptively.
 
-- Download the canonical version-2 CSV and record its SHA-256 checksum.
-- Validate the reported row count, exact headers, types, nulls, duplicates, value ranges, and fraud counts from the raw bytes.
-- Resolve the source-documentation discrepancy between “744 steps” and the Kaggle Data Explorer range of `1` through `743`.
-- Decide the ingestion representation for monetary values only after inspecting their raw precision.
-- Reconcile the project brief's proposed balance features with the dataset publisher's warning that all four balance columns should not be used for fraud detection because detected fraud transactions are cancelled.
+## Exact next action
 
-## Next action
-
-The user answers the comprehension question about why information produced after a risk decision causes leakage. After a correct explanation, design the ingestion and schema-validation module. Do not begin modelling or broad SQL investigation.
+Review `00_overview.sql`, `02_risk_by_type.sql` and `06_prior_hour_activity.sql`. Explain which history a payment in step 20 may use and why its post-transaction balance cannot be a pre-decision input. Then modify the type-risk query to include legitimate transaction counts and verify that each segment's fraud plus legitimate counts equals its total. Do not begin model code until this learning check is accepted.

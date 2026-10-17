@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "input_mode": "canonical_paysim",
+  "input_sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+  "queries_executed": 9,
+  "reconciliation": "passed"
+}

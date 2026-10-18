@@ -1,0 +1,48 @@
+# Raw data and local/generated outputs
+data/
+artifacts/
+outputs/
+reports/generated/
+*.csv
+!src/payment_risk/demo.csv
+*.tsv
+*.parquet
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+.kaggle/
+kaggle.json
+*.pem
+*.key
+.venv/
+venv/
+
+# Python and test/build outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Local reference material
+project_sources/
+private/
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

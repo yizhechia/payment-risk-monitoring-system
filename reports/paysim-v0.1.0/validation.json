@@ -1,0 +1,122 @@
+{
+  "status": "passed",
+  "input_mode": "canonical_paysim",
+  "dataset": "ealaxi/paysim1",
+  "dataset_version": 2,
+  "software": {
+    "package": "0.1.0",
+    "python": "3.12.14",
+    "duckdb": "1.4.3"
+  },
+  "money_type": "DECIMAL(18,2); preserve source precision; reject excess rather than round",
+  "observed": {
+    "filename": "PS_20174392719_1491204439457_log.csv",
+    "bytes": 493534783,
+    "sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+    "headers": [
+      "step",
+      "type",
+      "amount",
+      "nameOrig",
+      "oldbalanceOrg",
+      "newbalanceOrig",
+      "nameDest",
+      "oldbalanceDest",
+      "newbalanceDest",
+      "isFraud",
+      "isFlaggedFraud"
+    ],
+    "rows": 6362620,
+    "fraud_rows": 8213,
+    "flagged_rows": 16,
+    "min_step": 1,
+    "max_step": 743,
+    "distinct_steps": 743,
+    "duplicate_extra_rows": 0,
+    "merchant_zero_balance_rows": 2151495,
+    "transaction_types": {
+      "CASH_IN": 1399284,
+      "CASH_OUT": 2237500,
+      "DEBIT": 41432,
+      "PAYMENT": 2151495,
+      "TRANSFER": 532909
+    },
+    "typed_schema": {
+      "row_id": "BIGINT",
+      "step": "INTEGER",
+      "type": "VARCHAR",
+      "amount": "DECIMAL(18,2)",
+      "nameOrig": "VARCHAR",
+      "oldbalanceOrg": "DECIMAL(18,2)",
+      "newbalanceOrig": "DECIMAL(18,2)",
+      "nameDest": "VARCHAR",
+      "oldbalanceDest": "DECIMAL(18,2)",
+      "newbalanceDest": "DECIMAL(18,2)",
+      "isFraud": "UTINYINT",
+      "isFlaggedFraud": "UTINYINT"
+    },
+    "money_ranges": {
+      "amount": {
+        "minimum": "0.00",
+        "maximum": "92445516.64"
+      },
+      "oldbalanceOrg": {
+        "minimum": "0.00",
+        "maximum": "59585040.37"
+      },
+      "newbalanceOrig": {
+        "minimum": "0.00",
+        "maximum": "49585040.37"
+      },
+      "oldbalanceDest": {
+        "minimum": "0.00",
+        "maximum": "356015889.35"
+      },
+      "newbalanceDest": {
+        "minimum": "0.00",
+        "maximum": "356179278.92"
+      }
+    }
+  },
+  "errors": [],
+  "warnings": [
+    "Merchant balance zeros are structurally unavailable, not verified zero balances."
+  ],
+  "expected_sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+  "value_checks": {
+    "missing_step": 0,
+    "missing_type": 0,
+    "missing_amount": 0,
+    "missing_nameOrig": 0,
+    "missing_oldbalanceOrg": 0,
+    "missing_newbalanceOrig": 0,
+    "missing_nameDest": 0,
+    "missing_oldbalanceDest": 0,
+    "missing_newbalanceDest": 0,
+    "missing_isFraud": 0,
+    "missing_isFlaggedFraud": 0,
+    "invalid_amount": 0,
+    "invalid_oldbalanceOrg": 0,
+    "invalid_newbalanceOrig": 0,
+    "invalid_oldbalanceDest": 0,
+    "invalid_newbalanceDest": 0,
+    "invalid_step": 0,
+    "invalid_type": 0,
+    "invalid_isFraud": 0,
+    "invalid_isFlaggedFraud": 0
+  },
+  "maximum_effective_decimal_places": {
+    "amount": 2,
+    "oldbalanceOrg": 2,
+    "newbalanceOrig": 2,
+    "oldbalanceDest": 2,
+    "newbalanceDest": 2
+  },
+  "scientific_notation_rows": {
+    "amount": 5650,
+    "oldbalanceOrg": 140970,
+    "newbalanceOrig": 145092,
+    "oldbalanceDest": 107345,
+    "newbalanceDest": 118988
+  }
+}

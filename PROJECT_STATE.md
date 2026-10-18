@@ -1,43 +1,31 @@
-# Project State
+# Project Status
 
-## Current milestone
+Current version: **0.1.0 - ingestion and SQL investigation**.
 
-**Milestone 1 — Problem and Data Foundation: IN PROGRESS**
+| Component | Status |
+| --- | --- |
+| Dataset acquisition and fingerprinting | Implemented |
+| Schema and value validation | Implemented |
+| DuckDB data layers | Implemented |
+| Nine SQL investigations | Implemented |
+| Findings report and reconciliation | Implemented |
+| Historical features and rule baseline | Planned |
+| Predictive models and decision policy | Planned |
+| Streamlit dashboard | Planned |
 
-The approved primary dataset is PaySim. No ingestion, schema-validation, SQL-investigation, feature-engineering, or modelling code has been implemented.
+## Validation
 
-## Progress labels
+The PaySim version-2 run contains 6,362,620 transactions, 8,213 fraud labels and 743 hourly steps. All implemented data-quality checks and query reconciliations passed. The software suite contains 102 tests. See [run results](reports/paysim-v0.1.0/README.md) and [verification metadata](reports/paysim-v0.1.0/verification.json).
 
-- **BUILT:** Dataset provenance record, field-level data dictionary, and leakage register.
-- **TESTED:** Nothing yet. The raw CSV has not been acquired or validated locally.
-- **UNDERSTOOD:** Pending the required comprehension check on post-decision leakage.
-- **INTERVIEW READY:** No.
+## Design decisions
 
-## Completed decisions
+- Pin the canonical source artifact by filename, size and SHA-256.
+- Store request fields separately from balances, outcomes and the supplied policy flag.
+- Preserve numeric values with `DECIMAL(18,2)` after exponent-adjusted precision checks.
+- Use only completed earlier steps for historical activity; row IDs do not imply event order.
+- Retain duplicate-valued rows and report merchant balance placeholders.
+- Preserve the source's policy flag and report its discrepancy with the simplified published rule.
 
-1. Use PaySim as the primary dataset.
-2. Define the operational decision point as immediately before a transaction is allowed or blocked and before ledger balances are changed.
-3. Treat `isFraud` as an outcome label, never as an input feature.
-4. Treat `isFlaggedFraud` as an existing policy output: retain it for legacy-rule comparison, but exclude it from candidate features.
-5. Treat `newbalanceOrig` and `newbalanceDest` as post-decision information and exclude them from authorization-time features.
-6. For transaction-level features at step `t`, use only information from completed steps strictly earlier than `t`. CSV row order within a step is not accepted as event order.
-7. Keep all rows from the same `step` in the same chronological data partition.
-8. Do not commit the raw dataset to Git.
+## Next milestone
 
-## Built documentation
-
-- `docs/DATASET_PROVENANCE.md`
-- `docs/DATA_DICTIONARY.md`
-- `docs/LEAKAGE_REGISTER.md`
-
-## Open issues
-
-- Download the canonical version-2 CSV and record its SHA-256 checksum.
-- Validate the reported row count, exact headers, types, nulls, duplicates, value ranges, and fraud counts from the raw bytes.
-- Resolve the source-documentation discrepancy between “744 steps” and the Kaggle Data Explorer range of `1` through `743`.
-- Decide the ingestion representation for monetary values only after inspecting their raw precision.
-- Reconcile the project brief's proposed balance features with the dataset publisher's warning that all four balance columns should not be used for fraud detection because detected fraud transactions are cancelled.
-
-## Next action
-
-The user answers the comprehension question about why information produced after a risk decision causes leakage. After a correct explanation, design the ingestion and schema-validation module. Do not begin modelling or broad SQL investigation.
+Chronological partitions, past-only feature calculations and an interpretable rule baseline. Completion criteria are in the [roadmap](docs/MILESTONES.md).

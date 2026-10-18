@@ -1,0 +1,58 @@
+{
+  "release": "0.1.0",
+  "scope": "PaySim ingestion, validation and SQL investigation",
+  "software": {
+    "package": "0.1.0",
+    "python": "3.12.14",
+    "duckdb": "1.4.3"
+  },
+  "local_checks": {
+    "pytest": {
+      "command": "uv run --extra dev pytest -q",
+      "passed": 102,
+      "failed": 0
+    },
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "wheel_build": "passed",
+    "isolated_wheel_install_and_demo": "passed",
+    "fresh_full_cli_run": "passed",
+    "queries_executed": 9,
+    "all_population_and_monetary_reconciliations": "passed",
+    "repeat_run_outputs_byte_identical": [
+      "validation.json",
+      "results.json",
+      "run.json",
+      "investigation.md"
+    ]
+  },
+  "hosted_ci": "https://github.com/yizhechia/payment-risk-monitoring-system/actions/workflows/tests.yml",
+  "input_sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
+  "full_cli_command": "payment-risk run --csv data/raw/PS_20174392719_1491204439457_log.csv --output artifacts/paysim",
+  "runtime_and_test_file_sha256": {
+    "pyproject.toml": "0c365dfe12e88430e7917e2e2e9b2fe4e870ca7c4a30471a35e8abfdb9083ea3",
+    "src/payment_risk/__init__.py": "f60f810b22ddbc1abca6a966e9ae7b5c3bb2863861efbf22e5975be14a1375ce",
+    "src/payment_risk/__main__.py": "95ed4cc322b29ab784f3696953149d204e330f07d58414d00ccd78b75e37a0eb",
+    "src/payment_risk/acquire.py": "f7bb699a22c6a7256796a7f0be24503a5f935315f12566bc708429d43ba65a53",
+    "src/payment_risk/cli.py": "6fcdcfb31689a5749c253a4c9417030e69a74236f779775e3ad85158aee09311",
+    "src/payment_risk/contracts.py": "9655fb6185ee7642748fa3fedd29c34c9603cc23ac6833b81dcd089f02b72d2a",
+    "src/payment_risk/demo.csv": "d9fadbda84b1b338d621c69c3e36cc4081c503be2b0bd2592a367e53667027ea",
+    "src/payment_risk/investigate.py": "9f8fe9a5c90ce6d6fb58072c8c952dbd92bc70de649f51ac3b62123d026ed46b",
+    "src/payment_risk/paysim_manifest.json": "4fae62db2f1bbaff7d5218b226b020ebe4f884998c69069c4d5aaae96a020d58",
+    "src/payment_risk/pipeline.py": "f0943e45e287c594b7769a97b8dfce4aab91ff16148a58d1f12b6afedb6978ff",
+    "src/payment_risk/sql/00_overview.sql": "91805f4c28ca09debe4e9c899966599b180a0de169846396a16ec1b0fce6f51a",
+    "src/payment_risk/sql/01_volume_by_step.sql": "37709850c3b6d65ea089f2c48c0d30a76caa44a925e100e130ce3e60eb365814",
+    "src/payment_risk/sql/02_risk_by_type.sql": "abdd6d31a714ecef5b735324762a5ebb86d2db5b56d9720b83f488f3996048c8",
+    "src/payment_risk/sql/03_high_value.sql": "d16445a17475d2a920b243c55617e5313c8fa6da871c074ea7497393949726bb",
+    "src/payment_risk/sql/04_repeat_entities.sql": "050ff73d160d349fdf4948c0c38ccb44d0bbea3d2e52bbd72676666142109863",
+    "src/payment_risk/sql/05_pair_concentration.sql": "796b5491660ffaf24a0d3f15a327ac17192d6192318b2d12eef7bede14591ce9",
+    "src/payment_risk/sql/06_prior_hour_activity.sql": "d5385c4482135b8baed9019cc31498194d4a9ad9c36a7b38a94792ae5e4ac15d",
+    "src/payment_risk/sql/07_receiver_fraud_concentration.sql": "f2e55ee60621a47abc741904d06f203c7a60d80b2e57d563b19b97caa5f6a8f6",
+    "src/payment_risk/sql/08_account_history.sql": "46ac7e9cd3673e58b8978d912511c53eeb0ef6889411e047edb1bd6f4ba9aa70",
+    "tests/conftest.py": "87d6029110ba33c7f7408ee277da3ab21a768950d4fce429ebdf2499db85f85e",
+    "tests/test_acquisition_cli.py": "b3b1f2f98578560bbf1a8fc3566696bd5e704b9c6ec054d03b0ca4fb07a0e151",
+    "tests/test_investigations.py": "ea83a2d04845e2418cc92c9b0e366f727ff81686ab90bbf85ed144b8ff186f7c",
+    "tests/test_validation.py": "69de224d4f2c3a2781693d0670998a4a9304646b27282bd6a31a5773e3b5c5bd",
+    "uv.lock": "ce22e9882bd115c0dc7b936f8b4918e47523bcd16f1a32113cf71a536e82c7fa"
+  }
+}

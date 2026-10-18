@@ -1,69 +1,60 @@
 # PaySim Dataset Provenance
 
-## Verification status
+## Artifact identity and observed evidence
 
-**Metadata verified; raw-byte fingerprint pending.**
+The canonical source is [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/datasets/ealaxi/paysim1), published by Edgar Lopez-Rojas (`ealaxi`). The live Kaggle metadata API confirmed version 2 and CC BY-SA 4.0. The acquisition record names the version-pinned endpoint below; a fresh local fingerprint matches it. Full-file validation has passed.
 
-The canonical dataset record and exact file metadata were checked against Kaggle's live dataset page and public API on 2026-09-16. The CSV itself has not yet been acquired in the project environment, so its SHA-256 checksum and observed contents are not claimed as verified.
+| Property | Value | Evidence |
+| --- | --- | --- |
+| Dataset | `ealaxi/paysim1`, version 2 | Canonical metadata |
+| Source last-updated timestamp | `2017-04-03T08:40:34.403Z` | Canonical metadata |
+| File | `PS_20174392719_1491204439457_log.csv` | Download and raw-file fingerprint |
+| Bytes | 493,534,783 | Local measurement and canonical file-list metadata |
+| SHA-256 | `16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b` | Local measurement, pinned in the package manifest |
+| Rows | 6,362,620 | Full-file validation |
+| Columns | 11 source fields, plus generated `row_id` in DuckDB | Header check and typed schema |
+| Fraud / legitimate | 8,213 / 6,354,407 | Full-file validation |
+| Supplied policy flags | 16 | Full-file validation |
+| Step coverage | 1 through 743; 743 distinct buckets | Full-file validation |
+| Missing / invalid field values | 0 for the implemented checks | Full-file validation |
+| Duplicate-valued extra rows | 0 | Grouping across all 11 typed source fields |
+| Merchant zero-placeholder rows | 2,151,495 | Destination prefix `M` with both destination balances zero |
+| Monetary storage | `DECIMAL(18,2)` | At most two effective fractional digits after exponent adjustment |
+| Dataset license | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | Canonical metadata |
 
-## Canonical artifact
+Full observed schema, monetary ranges, checks and notation counts are in [validation.json](../reports/paysim-v0.1.0/validation.json). No records were dropped or imputed.
 
-| Property | Verified value |
-|---|---|
-| Dataset title | Synthetic Financial Datasets For Fraud Detection |
-| Kaggle reference | `ealaxi/paysim1` |
-| Dataset owner | Edgar Lopez-Rojas (`ealaxi`) |
-| Dataset version | 2 |
-| Version note | Sample PaySim dataset generated |
-| Version publication | 2017-04-03T08:40:34.403Z |
-| File | `PS_20174392719_1491204439457_log.csv` |
-| Files in dataset | 1 |
-| Reported file size | 493,534,783 bytes |
-| Format | CSV |
-| Reported rows | 6,362,620 |
-| Reported columns | 11 |
-| Reported legitimate rows | 6,354,407 |
-| Reported fraud rows | 8,213 |
-| License | CC BY-SA 4.0 |
-| SHA-256 | **PENDING — compute from the downloaded version-2 file** |
+## Acquisition and pinning
 
-Canonical record: <https://www.kaggle.com/datasets/ealaxi/paysim1>
+Version-pinned endpoint:
 
-## Provenance chain
+<https://www.kaggle.com/api/v1/datasets/download/ealaxi/paysim1?datasetVersionNumber=2>
 
-1. The source material was one month of private financial logs from a mobile-money service operating in an African country.
-2. The country, company, customers, currency, and raw private records are not disclosed.
-3. PaySim used aggregated properties from those logs to calibrate an agent-based simulation of normal mobile-money activity.
-4. Fraudulent behaviour was injected through simulated malicious agents; the fraud labels are therefore generated ground truth, not adjudicated real-world fraud outcomes.
-5. The Kaggle artifact is described by the publisher as a one-quarter-scale synthetic dataset created specifically for Kaggle.
-6. The artifact contains five transaction types: `CASH_IN`, `CASH_OUT`, `DEBIT`, `PAYMENT`, and `TRANSFER`.
+Metadata endpoints used:
 
-Primary methodology reference:
+- <https://www.kaggle.com/api/v1/datasets/view/ealaxi/paysim1>
+- <https://www.kaggle.com/api/v1/datasets/list/ealaxi/paysim1>
 
-E. A. Lopez-Rojas, A. Elmir, and S. Axelsson, “PaySim: A Financial Mobile Money Simulator for Fraud Detection,” *28th European Modeling and Simulation Symposium*, 2016.
+`payment-risk download` requires the expected ZIP member, uncompressed size and CSV checksum. `payment-risk run` independently checks filename, size, hash, header and contents. Another sample, mirror or hash is not silently substituted. Source access may require Kaggle sign-in; manual canonical version-2 acquisition is documented in the README.
 
-Paper: <https://www.msc-les.org/proceedings/emss/2016/EMSS2016_249.pdf>
+This SHA-256 is the fingerprint of the acquired canonical artifact, not an independently signed publisher checksum. Reproduction verifies identity against this project pin. The raw CSV and generated DuckDB files remain outside Git.
 
-Thesis referenced by the dataset publisher: <https://urn.kb.se/resolve?urn=urn:nbn:se:bth-12932>
+## Source semantics and limitations
 
-## Known source limitations
+The publisher describes this artifact as synthetic mobile-money transactions generated from aggregated properties of private source logs. Fraud labels identify simulated malicious-agent activity. The publication does not provide real customer records, actual fraud adjudication, precise timestamps, label-delay timestamps or realised-loss outcomes.
 
-- This is synthetic mobile-money data, not anonymised transaction-level production data.
-- Results can demonstrate analytical and engineering methods, but cannot establish production fraud-detection performance.
-- `step` is an hourly simulation bucket, not a real timestamp. It has no date, time zone, or documented order within an hour.
-- The dataset does not include a transaction ID. CSV row position must not be treated as a business identifier.
-- Currency is intentionally undisclosed. Monetary values must be described as local-currency units, not dollars.
-- Destination balances are not available for merchant identifiers beginning with `M`; zero values for those rows are structural placeholders, not verified zero balances.
-- The publisher states that detected fraudulent transactions are cancelled and warns against using all four balance columns for fraud detection. This conflicts with the project brief's provisional balance-feature ideas and is recorded as an open design issue.
-- The description says the simulator ran for 744 hourly steps, while Kaggle's Data Explorer reports an artifact range from `1` to `743`. The ingestion stage must measure the actual minimum, maximum, and distinct-step count instead of assuming either interpretation.
+All four balance fields remain restricted to audit because the publisher warns against their use for fraud detection when detected fraud is cancelled. Merchant destination balance zeros are structurally unavailable, not observed zero customer balances. `isFlaggedFraud` is retained as a supplied policy output, separately from both targets and eligible request fields.
 
-## Reproducibility requirements for acquisition
+The original PaySim paper explains the simulator. The specific Kaggle artifact's labels, supplied flag and balance warning are sourced to its publisher metadata; they are not attributed solely to the earlier simulator paper.
 
-When ingestion work is authorised:
+## Two resolved ingestion questions
 
-1. Acquire version 2 from the canonical Kaggle reference.
-2. Require the exact filename above.
-3. Record file size and SHA-256 before parsing.
-4. Compare the observed schema and record count with this manifest.
-5. Store the raw file outside Git.
-6. Fail visibly if the file fingerprint or schema differs; do not silently accept another PaySim mirror or sample.
+**Step coverage:** source prose describes 744 simulation hours; the selected artifact contains exactly 743 distinct step values, 1-743. Code and reporting use that observed range. No extra hour is fabricated. The reason for the source-prose difference is not established.
+
+**Monetary notation:** ordinary decimals and scientific notation both occur. For example, `1.916920493E7` equals `19169204.93`; counting characters after the decimal point would give a false precision warning. Effective scale was measured across all five monetary fields and is at most two. The validator checks syntax, exponent-adjusted precision and decimal range before casting; it rejects unsupported precision rather than relying on a rounding cast.
+
+## Attribution
+
+Edgar Lopez-Rojas and collaborators, *Synthetic Financial Datasets For Fraud Detection*, Kaggle, version 2, CC BY-SA 4.0. Dataset-derived report tables and summaries retain that attribution and license. Changes consist of validation, aggregation and selected-record reporting; no author endorsement is implied.
+
+Methodology reference: E. A. Lopez-Rojas, A. Elmir and S. Axelsson, *PaySim: A Financial Mobile Money Simulator for Fraud Detection*, EMSS 2016. [Original paper](https://www.msc-les.org/proceedings/emss/2016/EMSS2016_249.pdf).

@@ -1,57 +1,54 @@
 # System Design
 
-## Current release boundary
+The pipeline runs locally in two stages: validate the source CSV and publish a DuckDB database, then run SQL investigations and write reports.
 
-v0.1.0 implements validated acquisition, ingestion, DuckDB storage and retrospective SQL investigation. It is a local batch workflow. No prediction model, tuned decision policy, dashboard or authorisation service exists yet.
+## Input contract
 
-## Inputs, outputs and assumptions
+The canonical PaySim version-2 artifact is pinned by filename, byte size and SHA-256 in `src/payment_risk/paysim_manifest.json`. Demo mode uses a separate 12-row test fixture. Every run writes to a new directory.
 
-Input is the canonical version-2 CSV pinned by name, size and SHA-256 in `src/payment_risk/paysim_manifest.json`. Demo mode explicitly substitutes a handcrafted software fixture. Credentials and raw records are excluded from Git.
+The fingerprint identifies the recorded artifact. Schema and value validation independently check its contents. An optional expected-hash assertion cannot override the canonical pin.
 
-The pipeline creates a fresh run directory, writes a validation report, and publishes a DuckDB database only after blocking checks pass. Nine SQL queries then create exact result JSON, a Markdown investigation report and a run-status record. A failed SQL stage retains the validated database but does not produce a successful run status.
+## Ingestion
 
-A file hash establishes reproducibility against the recorded acquisition, not independent authenticity. The canonical source, versioned download endpoint, file size and observed schema accompany that fingerprint. An optional expected-hash assertion cannot override the canonical pin.
+1. Check the filename, size, hash and exact 11-column header.
+2. Parse fields as strings under strict CSV rules.
+3. Reject missing fields, unknown transaction types, invalid labels, nonpositive steps and unsupported monetary values.
+4. Check the exponent-adjusted scale before converting amounts and balances to `DECIMAL(18,2)`.
+5. Record counts, step coverage, duplicates, merchant placeholders, monetary ranges and the typed schema.
+6. Recheck the raw fingerprint to detect changes during ingestion.
+7. Create the data layers and metadata in a transaction, then publish the database after successful validation.
 
-## Implemented flow
-
-1. Verify raw name, byte size and SHA-256 before parsing.
-2. Require all 11 header names in their exact order.
-3. Read fields as strings under strict CSV parsing. Reject missing values, unsupported monetary syntax/precision/range, nonpositive steps, unknown transaction types and nonbinary labels.
-4. Validate ordinary decimal and scientific notation, applying the exponent when checking precision. Convert monetary values to `DECIMAL(18,2)`, matching the maximum two effective decimal places observed across all five monetary columns. Reject greater effective precision before casting; do not silently round. Store steps as `INTEGER` and labels as `UTINYINT`.
-5. Measure row/label/flag counts, step coverage, type counts, duplicates, merchant placeholders, monetary ranges and typed schema. Compare canonical row and fraud counts with the manifest. Retain duplicate-valued records because no business transaction ID proves they are erroneous copies.
-6. Re-fingerprint the raw file to detect changes during ingestion.
-7. Create four tables and a metadata record in a transaction. Close and move the temporary database into the run directory only on success.
-8. Run parameterised SQL on a read-only connection. Verify that supplied validation matches the database's embedded ingestion metadata. Reconcile population, fraud, policy and monetary totals before reporting success.
-
-DuckDB uses one thread, a 1 GB engine limit during ingestion and a 2 GB limit for SQL; spilling may use disk. A full-file test exceeded 1 GB in the account-hour window query, so the investigation budget was raised explicitly. Insertion-order preservation is disabled for analysis because every displayed listing has an explicit order and row IDs were already assigned during ingestion. This is memory-conscious batch processing, not a demonstrated production throughput claim. Reusable logic and SQL live in the installable package, outside notebooks.
+Duplicate-valued records are reported and retained because the source has no business transaction identifier. Merchant destination balance zeros remain structural placeholders.
 
 ## Data layers
 
-| Object | Contents | Purpose |
+| Object | Contents | Use |
 | --- | --- | --- |
-| `request_transactions` | `row_id`, `step`, `type`, `amount`, `nameOrig`, `nameDest` | Eligible request fields and entity keys |
-| `audit_balances` | `row_id` and all four balances | Restricted data-quality and retrospective audit |
-| `outcomes` | `row_id`, `isFraud` | Retrospective reporting and future evaluation |
-| `legacy_policy` | `row_id`, `isFlaggedFraud` | Audit the supplied policy output |
-| `transactions` | Joined view of the four tables | Retrospective SQL only; not a prediction-input table |
-| `run_metadata` | Successful ingestion report | Tie investigation to its validated input |
+| `request_transactions` | `row_id`, `step`, `type`, `amount`, `nameOrig`, `nameDest` | Request fields and entity keys |
+| `audit_balances` | `row_id` and all four balances | Data-quality and retrospective audit |
+| `outcomes` | `row_id`, `isFraud` | Retrospective reporting |
+| `legacy_policy` | `row_id`, `isFlaggedFraud` | Supplied-policy comparison |
+| `transactions` | Joined view | Retrospective SQL investigation |
+| `run_metadata` | Ingestion report | Input identity and validation results |
 
-The row number is stable for the selected file and distinguishes duplicate-valued rows. It supplies no knowledge of actual within-hour order. Separation is a useful boundary, not a security access-control system or a completed model leakage safeguard.
+`row_id` is a technical key within the pinned file. It distinguishes records but does not establish within-hour event order. Data-layer separation is an analytical boundary rather than an access-control mechanism.
 
-## Time and interpretation contract
+## SQL and reconciliation
 
-For a payment at step `t`, the decision-time history contains eligible request activity from steps strictly less than `t`. The implemented prior-hour query uses exactly `t - 1` via an explicit numeric `RANGE` window. It does not substitute the previous observed step when hours are missing.
+Investigations use a read-only connection and bound parameters. Before querying, the supplied validation report must match the database's embedded metadata. Time and transaction-type aggregates reconcile to the overview, including exact amounts. Label and supplied-policy counts reconcile to validation.
 
-Whole-period repeats, pair shares, labels and account histories remain retrospective. The recipient lead query is explicitly selected using outcomes. Prior-hour query tests cover same-step permutation and adding future rows; general model-feature, preprocessing and split-boundary tests remain future work.
+Results record query hashes, parameters and returned rows. JSON encodes monetary values as decimal strings. Listings are limited for inspection; population counts are computed before limiting.
 
-All records in a step must eventually remain together in a chronological partition. Label-delay timestamps are absent, so historical label aggregates remain excluded from future predictive inputs. The source has already been explored descriptively; later evaluation must disclose this rather than claim a wholly unseen dataset.
+## Time semantics
 
-## A likely failure mode
+A decision-time history can use only steps strictly earlier than the transaction's step. The previous-hour query uses `RANGE BETWEEN 1 PRECEDING AND 1 PRECEDING`, so step 3 does not become step 5's previous hour when step 4 is absent. Same-step permutation and future-row tests cover this query.
 
-A naive `LAG` over observed account-hours can treat step 3 as step 5's previous hour. A row-ordered window can include events from the same hour. Both invent temporal precision. The explicit step-range window and tests with a missing step and reordered records address those mistakes for the present SQL query.
+Full-period counts, pair shares and outcome-selected recipients are retrospective analyses. Later feature pipelines need explicit allow-lists, whole-step partitions and training-only preprocessing. Historical fraud-label aggregates also require a label-availability contract, which the source does not provide.
 
-Another practical failure is a changed upstream artifact. The pipeline fails visibly on a fingerprint mismatch rather than silently switching to a mirror or a newer file. Source availability remains external to this repository.
+## Resources and failure handling
 
-## Later stages
+DuckDB uses one thread, a 1 GB engine limit during ingestion and a 2 GB limit for investigation. These limits do not cap whole-process memory. Analysis disables insertion-order preservation; displayed listings specify their own order. Temporary spill files may use disk.
 
-Time-safe features and rules; logistic regression and one justified tree; chronological evaluation; simulated cost/capacity policy selection; a compact Streamlit investigation interface. No Spark, Kubernetes, deep learning, LLM agents, fake streaming or premature API service is required.
+Validation failures write a report and publish no database. SQL failures retain the validated database and record the failure in `run.json`. Existing run directories are never overwritten.
+
+Future work is listed in the [roadmap](MILESTONES.md).

@@ -1,6 +1,6 @@
-# Verified PaySim v0.1.0 Run
+# PaySim v0.1.0 Results
 
-This snapshot was generated from the full canonical version-2 CSV, not the handcrafted software demo. A fresh CLI run completed ingestion and all nine SQL investigations. A repeated run's validation, results, status and report were byte-identical. It demonstrates a local analytical workflow on synthetic data, not a trained detector or production impact.
+Results from the full synthetic PaySim version-2 CSV. Ingestion and all nine SQL investigations completed successfully. Repeated runs produced byte-identical validation reports, query results and run summaries.
 
 ## Population and quality
 
@@ -24,15 +24,15 @@ The total amount includes all transaction types and is not a measure of net mone
 3. **Recipient recurrence is an investigation lead:** recipient `C803116137` has two fraud-labelled payments among 77 payments from 77 distinct senders. The account was selected using outcomes. This is retrospective evidence, not an available online signal or proof of coordination. Evidence: `07_receiver_fraud_concentration.sql`.
 4. **The supplied flag requires qualification:** only 16 rows carry `isFlaggedFraud`, while 409,110 transfers exceed the publisher's described 200,000 cutoff. The simple condition and flag disagree on 409,094 of 6,362,620 rows. The code reports this discrepancy and does not invent missing rule conditions or replace the original flag. Evidence: `00_overview.sql`.
 
-## Evidence files
+## Run files
 
 - [Validation](validation.json): raw fingerprint, observed schema, precision, counts and checks.
 - [Complete returned SQL results](results.json): query hashes, bound parameters, result rows and reconciliation. Limited queries return up to 25 rows; complete source populations are not implied by those listings.
 - [Readable investigation report](investigation.md): findings, query tables and interpretation limits.
 - [Run status](run.json): successful execution of all nine queries.
-- [Software verification](verification.json): 102 fixture tests, formatting/lint checks, wheel installation/demo, full CLI replay and source/test file hashes. Hosted CI is not inferred from local checks.
+- [Software verification](verification.json): 102 fixture tests, formatting/lint checks, wheel installation/demo, full CLI replay and source/test file hashes.
 
-The prior-hour query uses exactly the previous completed step, excluding same-step rows and gaps. Full-period account repeats, pair shares and outcome-selected leads are descriptive investigations. No model evaluation has been performed, and full-dataset exploration must be disclosed in later evaluation work.
+The prior-hour query uses exactly the previous completed step, excluding same-step rows and gaps. Full-period account repeats, pair shares and outcome-selected leads are descriptive investigations. The descriptive analysis covers the full dataset; subsequent model evaluation should record this exploration in its protocol.
 
 ## Reproduce
 

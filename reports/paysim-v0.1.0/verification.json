@@ -1,6 +1,6 @@
 {
   "release": "0.1.0",
-  "scope": "Validated synthetic PaySim ingestion and retrospective SQL investigation; no models",
+  "scope": "PaySim ingestion, validation and SQL investigation",
   "software": {
     "package": "0.1.0",
     "python": "3.12.14",
@@ -26,7 +26,7 @@
       "investigation.md"
     ]
   },
-  "hosted_ci": "Not claimed; configuration is included. Check the actual GitHub workflow for its status.",
+  "hosted_ci": "https://github.com/yizhechia/payment-risk-monitoring-system/actions/workflows/tests.yml",
   "input_sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b",
   "full_cli_command": "payment-risk run --csv data/raw/PS_20174392719_1491204439457_log.csv --output artifacts/paysim",
   "runtime_and_test_file_sha256": {
@@ -54,7 +54,5 @@
     "tests/test_investigations.py": "ea83a2d04845e2418cc92c9b0e366f727ff81686ab90bbf85ed144b8ff186f7c",
     "tests/test_validation.py": "69de224d4f2c3a2781693d0670998a4a9304646b27282bd6a31a5773e3b5c5bd",
     "uv.lock": "ce22e9882bd115c0dc7b936f8b4918e47523bcd16f1a32113cf71a536e82c7fa"
-  },
-  "understood": "pending",
-  "interview_ready": false
+  }
 }
